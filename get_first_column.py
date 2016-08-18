@@ -7,7 +7,10 @@ import os
 import math
 import json
 import datetime
-from util import make_connection, query_result_to_json_string
+import sys
+import pprint
+from util import make_connection, query_result_to_json_string, list_indexes
+
 # Parse command-line arguments.
 parser = argparse.ArgumentParser(description='Fill this in later.')
 parser.add_argument(
@@ -27,7 +30,7 @@ parser.add_argument(
 )
 parser.add_argument(
     '-i', '--index',
-    type = str, required = True,
+    type = str,
     help = "The name of the index column we are enumerating"
 )
 parser.add_argument(
@@ -35,12 +38,33 @@ parser.add_argument(
     type = str, required = True,
     help = "The name of the table in question"
 )
+parser.add_argument(
+    '-l', '--list-indexes',
+    action = 'store_true',
+    help = "List index columns and exit"
+)
+parser.add_argument(
+    '--no-force-index',
+    dest = 'force_index',
+    action = 'store_false'
+)
 
 args = parser.parse_args()
 
 with open(args.credential_file, 'rb') as f:
   credentials = yaml.load(f.read().decode('utf-8'))
 
+if args.list_indexes:
+  pp = pprint.PrettyPrinter(indent=4)
+  pp.pprint(list_indexes(credentials, args.table_name))
+  sys.exit()
+
+if args.index is None:
+  raise Exception("Index must be specified, use --list-indexes to list.")
+
+first_columns = { x[0] for x in list_indexes(credentials, args.table_name).values() }
+if args.force_index and args.index not in first_columns:
+  raise Exception("Index is not valid.")
 
 # Fail fast if the output directory already exists.
 if os.path.exists(args.output_directory):

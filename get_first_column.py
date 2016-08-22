@@ -9,7 +9,8 @@ import json
 import datetime
 import sys
 import pprint
-from util import make_connection, query_result_to_json_string, list_indexes
+import math
+from util import make_connection, query_result_to_json_string, list_indexes, string_to_dict
 
 # Parse command-line arguments.
 parser = argparse.ArgumentParser(description='Fill this in later.')
